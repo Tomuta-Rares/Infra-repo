@@ -1,3 +1,5 @@
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,15 +34,3 @@ spec:
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 20
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: shopping-app
-spec:
-  type: ClusterIP
-  selector:
-    app: shopping
-  ports:
-    - port: 80
-      targetPort: 8000
