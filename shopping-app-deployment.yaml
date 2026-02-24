@@ -16,6 +16,14 @@ spec:
       containers:
         - name: shopping
           image: rarestomuta/shopping-app:1.0
+          resources:
+           requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
           env:
             - name: DATABASE_URL
               value: "mysql+mysqlconnector://user:userpass@mysql:3306/shopping"
