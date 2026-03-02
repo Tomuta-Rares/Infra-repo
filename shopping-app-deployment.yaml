@@ -25,13 +25,8 @@ spec:
            # memory: "512Mi"
 
           env:
-          - name: DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mysql-pass
-                key: password
           - name: DATABASE_URL
-            value: "mysql+mysqlconnector://user:$(DATABASE_PASSWORD)@mysql.mysql.svc.cluster.local:3306/shopping"
+            value: "mysql+mysqlconnector://user:userpass@mysql.mysql.svc.cluster.local:3306/shopping"
           ports:
             - containerPort: 8000
           readinessProbe:
