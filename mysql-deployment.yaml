@@ -26,11 +26,11 @@ spec:
             - name: MYSQL_USER
               value: user
             - name: MYSQL_PASSWORD
-              value: userpass
-              #valueFrom:
-               # secretKeyRef:
-                #  name: mysql-pass
-                 # key: password
+              #value: userpass
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-pass
+                  key: password
           ports:
             - containerPort: 3306
           volumeMounts:
@@ -40,4 +40,7 @@ spec:
         - name: mysql-storage
           persistentVolumeClaim:
             claimName: mysql-pvc
-
+      #securityContext:
+        #runAsUser: 1001      
+        #runAsGroup: 1001     
+        #fsGroup: 1001
