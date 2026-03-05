@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: shopping
-          image: rarestomuta/shopping-app:b74b6548550a71006d040078fd69f648dd45c5ff
+          image: rarestomuta/shopping-app:8e92f67561226548bfe927a737cfb80080a0bcdb
          # resources:
            #requests:
            # cpu: "200m"
