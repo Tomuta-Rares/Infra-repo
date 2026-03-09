@@ -17,13 +17,13 @@ spec:
       containers:
         - name: shopping
           image: rarestomuta/shopping-app:8e92f67561226548bfe927a737cfb80080a0bcdb
-          resources:
-           requests:
-            cpu: "200m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
+          # resources:
+          #  requests:
+          #   cpu: "200m"
+          #   memory: "256Mi"
+          # limits:
+          #   cpu: "500m"
+          #   memory: "512Mi"
 
           env:
           - name: DATABASE_URL
