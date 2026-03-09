@@ -8,6 +8,10 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - shopping.local
+      secretName: shopping-tls-secret
   rules:
     - host: shopping.local
       http:
