@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shopping-app
-  #namespace: shopping-app
+  namespace: shopping-app
 spec:
   replicas: 2
   selector:
