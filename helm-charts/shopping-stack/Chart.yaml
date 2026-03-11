@@ -5,10 +5,10 @@ description: A Helm chart for Kubernetes
 dependencies:
   - name: mysql
     version: 0.1.0
-    repository: "file:/home/tomuta/personal-project/github/Infra-repo/helm-charts/shopping-app"
+    repository: shopping-app
   - name: shopping-app
     version: 0.1.0
-    repository: "file:/home/tomuta/personal-project/github/Infra-repo/helm-charts/mysql"
+    repository: mysql
 
 # A chart can be either an 'application' or a 'library' chart.
 #
