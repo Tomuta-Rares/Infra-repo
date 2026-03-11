@@ -14,6 +14,8 @@ spec:
       labels:
         app: mysql
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
         - name: mysql
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -30,6 +32,11 @@ spec:
               #   secretKeyRef:
               #     name: {{ .Values.secret.name }}
               #     key: password
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+          
           ports:
             - containerPort: {{ .Values.service.port }}
           volumeMounts:
