@@ -2,7 +2,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-shopping-to-mysql
-  namespace: mysql
 spec:
   podSelector:
     matchLabels:
@@ -21,4 +20,4 @@ spec:
               app: shopping
       ports:
         - protocol: TCP
-          port: 3306
+          port: {{ .Values.service.port }}

@@ -16,6 +16,8 @@ spec:
         - name: shopping
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+      {{ toYaml .Values.resources | nindent 12 }}
           env:
             - name: DATABASE_URL
               value: {{ .Values.env.databaseUrl | quote }}
