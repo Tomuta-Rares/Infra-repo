@@ -6,6 +6,7 @@ mysql:
   rootPassword: rootpass
   database: shopping
   user: user
+  password: userpass
 
 service:
   port: 3306

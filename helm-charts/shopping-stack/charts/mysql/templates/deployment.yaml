@@ -25,10 +25,11 @@ spec:
             - name: MYSQL_USER
               value: {{ .Values.mysql.user | quote }}
             - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secret.name }}
-                  key: password
+              value: {{ .Values.mysql.password | quote }}
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: {{ .Values.secret.name }}
+              #     key: password
           ports:
             - containerPort: {{ .Values.service.port }}
           volumeMounts:
