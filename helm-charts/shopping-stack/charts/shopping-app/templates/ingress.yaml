@@ -17,6 +17,7 @@ spec:
       http:
         paths:
 
+          
           - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
@@ -25,6 +26,7 @@ spec:
                 port:
                   number: {{ .Values.service.port }}
 
+          
           - path: /
             pathType: Prefix
             backend:
