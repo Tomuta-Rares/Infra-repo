@@ -5,6 +5,12 @@ image:
   tag: "920d77d304a6aec0b6cdca71a425464460d553b9"
   pullPolicy: IfNotPresent
 
+frontend:
+  image:
+    repository: rarestomuta/shopping-frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
 resources:
   requests:
     cpu: 200m
