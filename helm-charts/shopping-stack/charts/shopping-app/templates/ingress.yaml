@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-ingress
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # rewrite-target only applies to frontend
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
@@ -15,6 +15,8 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
+
+          # Backend (FastAPI) - NO rewrite
           - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
@@ -22,6 +24,8 @@ spec:
                 name: {{ .Release.Name }}
                 port:
                   number: {{ .Values.service.port }}
+
+          # Frontend - rewrite all other paths to root of frontend
           - path: /(.*)
             pathType: ImplementationSpecific
             backend:
@@ -29,3 +33,5 @@ spec:
                 name: {{ .Release.Name }}-frontend
                 port:
                   number: 80
+            # Add the rewrite annotation only here
+            nginx.ingress.kubernetes.io/rewrite-target: /$1
