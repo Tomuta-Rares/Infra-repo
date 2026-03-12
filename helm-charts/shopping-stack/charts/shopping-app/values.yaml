@@ -5,11 +5,10 @@ image:
   tag: "6e59030bd660c41da77a751818caa1db33c391dd"
   pullPolicy: IfNotPresent
 
-# frontend:
-#   image:
-#     repository: rarestomuta/shopping-frontend
-#     tag: "6e59030bd660c41da77a751818caa1db33c391dd"
-#     pullPolicy: IfNotPresent
+frontend:
+  image:
+    repository: rarestomuta/shopping-frontend
+    pullPolicy: IfNotPresent
 
 resources:
   requests:
