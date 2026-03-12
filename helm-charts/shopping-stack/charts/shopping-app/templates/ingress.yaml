@@ -1,11 +1,10 @@
-{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
@@ -16,8 +15,6 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-
-          
           - path: /api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
@@ -25,13 +22,10 @@ spec:
                 name: {{ .Release.Name }}
                 port:
                   number: {{ .Values.service.port }}
-
-          
-          - path: /
-            pathType: Prefix
+          - path: /(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: {{ .Release.Name }}-frontend
                 port:
                   number: 80
-{{- end }}
