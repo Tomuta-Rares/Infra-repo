@@ -12,10 +12,10 @@ frontend:
 
 resources:
   requests:
-    cpu: 200m
+    cpu: 4m
     memory: 256Mi
   limits:
-    cpu: 500m
+    cpu: 15m
     memory: 512Mi
 
 service:
