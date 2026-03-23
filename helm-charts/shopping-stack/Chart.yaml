@@ -9,6 +9,9 @@ dependencies:
   - name: shopping-app
     version: 0.1.0
     repository: mysql
+  - name: keycloak
+    version: 21.1.1          
+    repository: https://charts.bitnami.com/bitnami
 
 # A chart can be either an 'application' or a 'library' chart.
 #
