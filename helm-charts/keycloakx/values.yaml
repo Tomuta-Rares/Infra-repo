@@ -118,6 +118,8 @@ extraEnv: |
       secretKeyRef:
         name: keycloak-admin-secret
         key: password
+  - name: KC_HOSTNAME
+    value: https://auth.local:8443/auth
 
 # Additional environment variables for Keycloak mapped from Secret or ConfigMap
 extraEnvFrom: ""
@@ -462,7 +464,7 @@ cache:
 
 proxy:
   enabled: true
-  mode: forwarded
+  mode: xforwarded
   http:
     enabled: true
 
