@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-shopping-to-mysql
+  name: allow-apps-to-mysql
   namespace: mysql
 spec:
   podSelector:
@@ -19,6 +19,14 @@ spec:
           podSelector:
             matchLabels:
               app: shopping
+
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+              app.kubernetes.io/instance: keycloak
       ports:
         - protocol: TCP
           port: {{ .Values.service.port }}
