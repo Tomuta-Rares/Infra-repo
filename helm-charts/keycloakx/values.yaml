@@ -8,14 +8,16 @@ nameOverride: ""
 replicas: 1
 
 image:
-  # The Keycloak image repository
   repository: quay.io/keycloak/keycloak
-  # Overrides the Keycloak image tag whose default is the chart appVersion
   tag: "26.5.5"
-  # Overrides the Keycloak image tag with a specific digest
   digest: ""
-  # The Keycloak image pull policy
   pullPolicy: IfNotPresent
+
+command:
+  - /opt/keycloak/bin/kc.sh
+
+args:
+  - start-dev
 
 # Image pull secrets for the Pod
 imagePullSecrets: []
@@ -111,9 +113,14 @@ command: []
 args: []
 
 # Additional environment variables for Keycloak
-extraEnv: ""
-  # - name: KC_LOG_LEVEL
-  #   value: DEBUG
+extraEnv: 
+   - name: KC_BOOTSTRAP_ADMIN_USERNAME
+     value: admin
+   - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+     valueFrom:
+        secretKeyRef:
+          name: keycloak-admin-secret
+          key: password
 
 # Additional environment variables for Keycloak mapped from Secret or ConfigMap
 extraEnvFrom: ""
