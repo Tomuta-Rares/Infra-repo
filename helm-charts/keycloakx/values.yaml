@@ -190,9 +190,9 @@ startupProbe: |
     path: '{{ tpl .Values.http.relativePath $ | trimSuffix "/" }}/health'
     port: '{{ .Values.http.internalPort }}'
     scheme: '{{ .Values.http.internalScheme }}'
-  initialDelaySeconds: 15
-  timeoutSeconds: 1
-  failureThreshold: 60
+  initialDelaySeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 120
   periodSeconds: 5
 
 # Pod resource requests and limits
