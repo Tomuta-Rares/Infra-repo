@@ -113,14 +113,14 @@ command: []
 args: []
 
 # Additional environment variables for Keycloak
-extraEnv: 
-   - name: KC_BOOTSTRAP_ADMIN_USERNAME
-     value: admin
-   - name: KC_BOOTSTRAP_ADMIN_PASSWORD
-     valueFrom:
-        secretKeyRef:
-          name: keycloak-admin-secret
-          key: password
+extraEnv: |
+  - name: KC_BOOTSTRAP_ADMIN_USERNAME
+    value: admin
+  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-admin-secret
+        key: password
 
 # Additional environment variables for Keycloak mapped from Secret or ConfigMap
 extraEnvFrom: ""
