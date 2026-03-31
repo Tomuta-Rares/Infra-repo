@@ -37,3 +37,5 @@ hpa:
 
 env:
   databaseUrl: "mysql+mysqlconnector://user:userpass@mysql.mysql.svc.cluster.local:3306/shopping"
+  keycloakIssuer: "https://auth.local:8443/auth/realms/devops-lvlup"
+  keycloakJwksUrl: "http://keycloak-keycloakx-http.keycloak.svc.cluster.local/auth/realms/devops-lvlup/protocol/openid-connect/certs"

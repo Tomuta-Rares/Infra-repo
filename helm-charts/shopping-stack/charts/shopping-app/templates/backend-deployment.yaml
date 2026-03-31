@@ -21,6 +21,10 @@ spec:
           env:
             - name: DATABASE_URL
               value: {{ .Values.env.databaseUrl | quote }}
+            - name: KEYCLOAK_ISSUER
+              value: {{ .Values.env.keycloakIssuer | quote }}
+            - name: KEYCLOAK_JWKS_URL
+              value: {{ .Values.env.keycloakJwksUrl | quote }}
           ports:
             - containerPort: {{ .Values.service.targetPort }}
           readinessProbe:
