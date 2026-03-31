@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: rarestomuta/shopping-app
-  tag: "ebe7eb38fa74f09f51687f3a56b6b372cabc6967"
+  tag: "cc17b876f340e9deb759a49d7d11ef9ca9f64996"
   pullPolicy: IfNotPresent
 
 frontend:
