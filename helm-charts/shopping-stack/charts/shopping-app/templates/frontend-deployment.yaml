@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: "{{ .Values.frontend.image.repository }}:1.7"
+          image: "{{ .Values.frontend.image.repository }}:1.8"
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: 80
