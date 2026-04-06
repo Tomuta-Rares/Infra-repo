@@ -87,12 +87,12 @@ fluent-bit:
 
     inputs: |
       [INPUT]
-        Name tail
-        Path /var/log/containers/*shopping-app-*_default_shopping-*.log
-        multiline.parser docker, cri
-        Tag kube.shopping.backend
-        Mem_Buf_Limit 5MB
-        Skip_Long_Lines On
+          Name tail
+          Path /var/log/containers/*shopping-app-*_default_shopping-*.log
+          multiline.parser docker, cri
+          Tag kube.shopping.backend
+          Mem_Buf_Limit 5MB
+          Skip_Long_Lines On
 
     filters: |
       [FILTER]
