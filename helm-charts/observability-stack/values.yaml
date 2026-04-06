@@ -68,33 +68,45 @@ grafana:
   testFramework:
     enabled: false
 
-promtail:
+fluent-bit:
   enabled: true
 
+  testFramework:
+    enabled: false
+
   config:
-    clients:
-      - url: http://observability-stack-loki:3100/loki/api/v1/push
+    service: |
+      [SERVICE]
+          Daemon Off
+          Flush 1
+          Log_Level info
+          Parsers_File parsers.conf
+          HTTP_Server On
+          HTTP_Listen 0.0.0.0
+          HTTP_Port 2020
 
-    snippets:
-      scrapeConfigs: |
-        - job_name: shopping-app-backend
-          static_configs:
-            - targets:
-                - localhost
-              labels:
-                job: shopping-app/backend
-                namespace: default
-                app: shopping-app
-                component: backend
-                __path__: /var/log/pods/default_shopping-app-*/shopping/*.log
+    inputs: |
+      [INPUT]
+          Name tail
+          Path /var/log/containers/*shopping-app*.log,/var/log/containers/*shopping-app-frontend*.log
+          multiline.parser docker, cri
+          Tag kube.*
+          Mem_Buf_Limit 5MB
+          Skip_Long_Lines On
 
-        - job_name: shopping-app-frontend
-          static_configs:
-            - targets:
-                - localhost
-              labels:
-                job: shopping-app/frontend
-                namespace: default
-                app: shopping-app
-                component: frontend
-                __path__: /var/log/pods/default_shopping-app-frontend-*/frontend/*.log
+    filters: |
+      [FILTER]
+          Name kubernetes
+          Match kube.*
+          Merge_Log On
+          Keep_Log On
+          Kube_Tag_Prefix kube.var.log.containers.
+
+    outputs: |
+      [OUTPUT]
+          Name loki
+          Match kube.*
+          Host observability-stack-loki
+          Port 3100
+          Labels job=fluent-bit
+          Line_Format json
