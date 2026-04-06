@@ -77,19 +77,17 @@ promtail:
 
     snippets:
       scrapeConfigs: |
-        - job_name: kubernetes-pods
+        - job_name: kubernetes-pods-default
           pipeline_stages:
             - cri: {}
 
           kubernetes_sd_configs:
             - role: pod
+              namespaces:
+                names:
+                  - default
 
           relabel_configs:
-            - source_labels:
-                - __meta_kubernetes_namespace
-              regex: (default|mysql|keycloak|observability)
-              action: keep
-
             - source_labels:
                 - __meta_kubernetes_pod_controller_name
               regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
