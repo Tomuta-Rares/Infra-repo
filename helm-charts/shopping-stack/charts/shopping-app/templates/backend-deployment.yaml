@@ -25,6 +25,12 @@ spec:
               value: {{ .Values.env.keycloakIssuer | quote }}
             - name: KEYCLOAK_JWKS_URL
               value: {{ .Values.env.keycloakJwksUrl | quote }}
+            - name: LOKI_URL
+              value: {{ .Values.env.lokiUrl | quote }}
+            - name: SERVICE_NAME
+              value: {{ .Values.env.serviceName | quote }}
+            - name: ENVIRONMENT
+              value: {{ .Values.env.environment | quote }}
           ports:
             - containerPort: {{ .Values.service.targetPort }}
           readinessProbe:

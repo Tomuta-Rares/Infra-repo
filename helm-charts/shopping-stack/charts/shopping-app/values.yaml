@@ -39,3 +39,6 @@ env:
   databaseUrl: "mysql+mysqlconnector://user:userpass@mysql.mysql.svc.cluster.local:3306/shopping"
   keycloakIssuer: "https://auth.local:8443/auth/realms/devops-lvlup"
   keycloakJwksUrl: "http://keycloak-keycloakx-http.keycloak.svc.cluster.local/auth/realms/devops-lvlup/protocol/openid-connect/certs"
+  lokiUrl: "http://observability-stack-loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+  serviceName: "shopping-app"
+  environment: "local"
