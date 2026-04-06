@@ -68,6 +68,16 @@ grafana:
   testFramework:
     enabled: false
 
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://observability-stack-loki.observability.svc.cluster.local:3100
+          isDefault: true
+
 # fluent-bit:
 #   enabled: true
 
