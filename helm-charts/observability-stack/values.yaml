@@ -77,6 +77,25 @@ grafana:
           access: proxy
           url: http://observability-stack-loki.observability.svc.cluster.local:3100
           isDefault: true
+        
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://observability-stack-tempo:3100
+
+tempo:
+  enabled: true
+
+  tempo:
+    auth_enabled: false
+
+  persistence:
+    enabled: false
+
+  service:
+    type: ClusterIP
+
+  resources: {}
 
 # fluent-bit:
 #   enabled: true

@@ -13,6 +13,10 @@ dependencies:
     version: 8.10.2
     repository: https://grafana.github.io/helm-charts
 
+  - name: tempo
+    version: 1.7.1
+    repository: https://grafana.github.io/helm-charts
+
   # - name: fluent-bit
   #   version: 0.48.9
   #   repository: https://fluent.github.io/helm-charts
