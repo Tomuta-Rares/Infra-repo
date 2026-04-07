@@ -42,3 +42,5 @@ env:
   lokiUrl: "http://observability-stack-loki.observability.svc.cluster.local:3100/loki/api/v1/push"
   serviceName: "shopping-app"
   environment: "local"
+  otelExporterOtlpEndpoint: "http://observability-stack-tempo.observability.svc.cluster.local:4318"
+  otelServiceName: "shopping-app"

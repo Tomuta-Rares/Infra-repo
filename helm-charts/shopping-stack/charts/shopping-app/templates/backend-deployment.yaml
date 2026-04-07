@@ -31,6 +31,10 @@ spec:
               value: {{ .Values.env.serviceName | quote }}
             - name: ENVIRONMENT
               value: {{ .Values.env.environment | quote }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.env.otelExporterOtlpEndpoint | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.env.otelServiceName | quote }}
           ports:
             - containerPort: {{ .Values.service.targetPort }}
           readinessProbe:
