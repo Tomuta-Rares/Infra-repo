@@ -1,0 +1,151 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "token endpoint returned 200": {
+                    "name": "token endpoint returned 200",
+                    "path": "::token endpoint returned 200",
+                    "id": "ce848b3ca4befc78ab15b32eb61172bd",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "token exists": {
+                    "name": "token exists",
+                    "path": "::token exists",
+                    "id": "501d3ab8642eebcf0d59abc7d9aca2c1",
+                    "passes": 1,
+                    "fails": 0
+                },
+                "GET /api/items returned 200": {
+                    "fails": 0,
+                    "name": "GET /api/items returned 200",
+                    "path": "::GET /api/items returned 200",
+                    "id": "a6b5a343290e93ea54d9287fd1362d43",
+                    "passes": 192
+                },
+                "POST /api/items returned 201": {
+                    "id": "92eebb5f3bcc801692683222e3c3e35d",
+                    "passes": 82,
+                    "fails": 0,
+                    "name": "POST /api/items returned 201",
+                    "path": "::POST /api/items returned 201"
+                }
+            }
+    },
+    "metrics": {
+        "data_received": {
+            "rate": 7558.150879783392,
+            "count": 2269261
+        },
+        "http_req_blocked": {
+            "max": 10020.748415,
+            "p(90)": 0.00023959999999999997,
+            "p(95)": 0.0005261000000000002,
+            "avg": 72.85974356727274,
+            "min": 0.00016,
+            "med": 0.000193
+        },
+        "http_req_sending": {
+            "p(90)": 0.1736634,
+            "p(95)": 0.2343626,
+            "avg": 0.1355619636363637,
+            "min": 0.081563,
+            "med": 0.119752,
+            "max": 0.89627
+        },
+        "iterations": {
+            "rate": 0.9126025349488884,
+            "count": 274
+        },
+        "data_sent": {
+            "count": 51972,
+            "rate": 173.10138301592565
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "iteration_duration": {
+            "med": 1014.6859185000001,
+            "max": 21316.901682,
+            "p(90)": 1029.2963488,
+            "p(95)": 1031.2878297,
+            "avg": 1095.726673083941,
+            "min": 1012.46882
+        },
+        "http_req_connecting": {
+            "max": 0.239405,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.0013075236363636364,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_duration": {
+            "max": 628.367812,
+            "p(90)": 28.312323799999998,
+            "p(95)": 30.96964080000001,
+            "avg": 21.639831145454536,
+            "min": 11.511742,
+            "med": 13.841703
+        },
+        "http_req_failed": {
+            "fails": 275,
+            "passes": 0,
+            "value": 0
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 13.841703,
+            "max": 628.367812,
+            "p(90)": 28.312323799999998,
+            "p(95)": 30.96964080000001,
+            "avg": 21.639831145454536,
+            "min": 11.511742
+        },
+        "http_req_receiving": {
+            "min": 0.049476,
+            "med": 0.134744,
+            "max": 0.889674,
+            "p(90)": 0.2720496,
+            "p(95)": 0.33842380000000005,
+            "avg": 0.16411584727272724
+        },
+        "http_reqs": {
+            "count": 275,
+            "rate": 0.9159332011348332
+        },
+        "checks": {
+            "passes": 276,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 5.637998,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.033912861818181816,
+            "min": 0
+        },
+        "http_req_waiting": {
+            "p(95)": 30.624657200000016,
+            "avg": 21.340153334545466,
+            "min": 11.294799,
+            "med": 13.51118,
+            "max": 628.071184,
+            "p(90)": 28.1009424
+        }
+    },
+    "setup_data": {
+        "runId": "res-podkill-001"
+    }
+}
