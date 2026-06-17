@@ -11,6 +11,17 @@ provider "aws" {
 }
 
 
+terraform {
+  cloud {
+    organization = "aws-dev-rares"
+
+    workspaces {
+      name = "aws-dev"
+    }
+  }
+}
+
+
 module "vpc" {
   source = "../../modules/vpc"
 
