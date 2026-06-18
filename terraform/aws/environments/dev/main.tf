@@ -23,7 +23,7 @@ terraform {
 
 
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/vpc?ref=v0.2.1"
 
   name     = "dev-vpc"
   vpc_cidr = "10.0.0.0/16"
@@ -38,7 +38,7 @@ module "vpc" {
 
 
 module "eks" {
-  source = "../../modules/eks"
+  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.1"
 
   cluster_name        = "dev-shopping-eks"
   subnet_ids          = module.vpc.public_subnet_ids
