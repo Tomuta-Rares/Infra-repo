@@ -3,6 +3,10 @@ terraform {
     aws = {
       source = "hashicorp/aws"
     }
+
+    helm = {
+      source = "hashicorp/helm"
+    }
   }
 }
 
@@ -10,7 +14,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-
+##### terraform cloud ##################
 terraform {
   cloud {
     organization = "aws-dev-rares"
@@ -20,7 +24,7 @@ terraform {
     }
   }
 }
-
+#######################################3#
 
 module "vpc" {
   source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/vpc?ref=v0.2.1"
@@ -45,3 +49,33 @@ module "eks" {
   node_subnet_ids     = module.vpc.public_subnet_ids
   node_instance_types = ["t3.small"]
 }
+
+##### install argocd ##############################################################################
+data "aws_eks_cluster" "this" {
+  name = module.eks.cluster_name
+}
+
+data "aws_eks_cluster_auth" "this" {
+  name = module.eks.cluster_name
+}
+
+provider "helm" {
+  kubernetes = {
+    host                   = data.aws_eks_cluster.this.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.this.token
+  }
+}
+
+resource "helm_release" "argocd" {
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  namespace        = "argocd"
+  create_namespace = true
+
+  depends_on = [
+    module.eks
+  ]
+}
+#####################################################################################################
