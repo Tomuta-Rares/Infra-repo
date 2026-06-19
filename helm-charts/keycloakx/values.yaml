@@ -119,7 +119,7 @@ extraEnv: |
         name: keycloak-admin-secret
         key: password
   - name: KC_HOSTNAME
-    value: https://auth.local:8443/auth
+    value: https://auth.local/auth
 
 # Additional environment variables for Keycloak mapped from Secret or ConfigMap
 extraEnvFrom: ""
