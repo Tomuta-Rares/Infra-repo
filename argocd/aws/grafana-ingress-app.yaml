@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: observability-extras
+  name: grafana-ingress
   namespace: argocd
 spec:
   project: default
@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/Tomuta-Rares/Infra-repo
     targetRevision: HEAD
-    path: grafana-ingress
+    path: ingress/grafana-ingress.yaml
 
   destination:
     server: https://kubernetes.default.svc
