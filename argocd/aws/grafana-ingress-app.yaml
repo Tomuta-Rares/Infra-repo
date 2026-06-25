@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/Tomuta-Rares/Infra-repo
     targetRevision: HEAD
-    path: ingress/grafana-ingress.yaml
+    path: ingress/grafana
 
   destination:
     server: https://kubernetes.default.svc

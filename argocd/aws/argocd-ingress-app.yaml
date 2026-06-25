@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/Tomuta-Rares/Infra-repo
     targetRevision: HEAD
-    path: ingress/argocd-ingress.yaml
+    path: ingress/argocd
 
   destination:
     server: https://kubernetes.default.svc
