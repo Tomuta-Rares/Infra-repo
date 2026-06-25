@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: rarestomuta/shopping-app
-  tag: "f14a56805066a21fed9f3fa2725dcdd13cfb3afa"
+  tag: "70ca939ea59fa3d0f3b57190ea464b03f2239b6d"
   pullPolicy: IfNotPresent
 
 frontend:
@@ -10,10 +10,14 @@ frontend:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
 <<<<<<< HEAD
+<<<<<<< HEAD
     #tag: "15844013013174493dc6e3fa2cbbc569016b69ed"
 =======
     tag: "f14a56805066a21fed9f3fa2725dcdd13cfb3afa"
 >>>>>>> b81c30c17c309f197b5a8fd47b8a18e1c24a86ae
+=======
+    tag: "70ca939ea59fa3d0f3b57190ea464b03f2239b6d"
+>>>>>>> e8a126e227ac6ee8d15150501e55f3f5b35693f6
 
 resources:
   requests:
