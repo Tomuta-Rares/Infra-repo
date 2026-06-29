@@ -20,7 +20,10 @@
         "https://shopping.local"
       ],
       "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": true
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "post.logout.redirect.uris": "https://shopping.local/*"
+      }
     }
   ],
   "users": [
