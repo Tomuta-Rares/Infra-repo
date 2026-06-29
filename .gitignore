@@ -16,3 +16,6 @@ override.tf.json
 
 # Terraform plan files
 *.tfplan
+
+
+sealed-secrets-master-key.yaml
