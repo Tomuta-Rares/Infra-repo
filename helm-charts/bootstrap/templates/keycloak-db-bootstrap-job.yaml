@@ -4,9 +4,8 @@ metadata:
   name: keycloak-db-bootstrap
   namespace: keycloak
   annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "2"
+    
 spec:
   template:
     spec:
