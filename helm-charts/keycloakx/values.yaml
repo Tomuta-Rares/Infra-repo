@@ -108,6 +108,7 @@ command:
 ## Overrides the default args for the Keycloak container
 args:
   - start-dev
+  - --import-realm
 
 # Additional environment variables for Keycloak
 extraEnv: |
@@ -207,7 +208,10 @@ resources: {}
   #   memory: "1024Mi"
 
 # Add additional volumes, e. g. for custom themes
-extraVolumes: ""
+extraVolumes: |
+  - name: realm-import
+    configMap:
+      name: keycloak-realm-import
 
 # Add volume claim templates to the StatefulSet, e. g. for dynamic provisioning
 volumeClaimTemplates: ""
@@ -221,7 +225,10 @@ volumeClaimTemplates: ""
   #         storage: 1Gi
 
 # Add additional volumes mounts, e. g. for custom themes
-extraVolumeMounts: ""
+extraVolumeMounts: |
+  - name: realm-import
+    mountPath: /opt/keycloak/data/import
+    readOnly: true
 
 # Add additional ports, e. g. for admin console or exposing JGroups ports
 extraPorts: []

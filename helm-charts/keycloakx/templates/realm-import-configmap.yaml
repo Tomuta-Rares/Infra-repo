@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-import
+  namespace: keycloak
+data:
+  devops-lvlup-realm.json: |
+{{ .Files.Get "realm/devops-lvlup-realm.json" | indent 4 }}
