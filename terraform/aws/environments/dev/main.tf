@@ -1,4 +1,12 @@
 terraform {
+  cloud {
+    organization = "aws-dev-rares"
+
+    workspaces {
+      name = "aws-dev"
+    }
+  }
+
   required_providers {
     aws = {
       source = "hashicorp/aws"
@@ -7,8 +15,13 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
+
     tls = {
       source = "hashicorp/tls"
+    }
+
+    null = {
+      source = "hashicorp/null"
     }
   }
 }
@@ -16,18 +29,6 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
-
-##### terraform cloud ##################
-terraform {
-  cloud {
-    organization = "aws-dev-rares"
-
-    workspaces {
-      name = "aws-dev"
-    }
-  }
-}
-#######################################3#
 
 module "vpc" {
   source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/vpc?ref=v0.2.1"
@@ -41,9 +42,6 @@ module "vpc" {
   availability_zones = ["eu-central-1a", "eu-central-1b"]
 }
 
-
-
-
 module "eks" {
   source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.6"
 
@@ -53,7 +51,6 @@ module "eks" {
   node_instance_types = ["t3.small"]
 }
 
-##### install argocd ##############################################################################
 data "aws_eks_cluster" "this" {
   name = module.eks.cluster_name
 
@@ -89,11 +86,6 @@ resource "helm_release" "argocd" {
     module.eks
   ]
 }
-#####################################################################################################
-
-
-
-######## ingress-nginx ###############################################################################
 
 resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
@@ -105,4 +97,25 @@ resource "helm_release" "ingress_nginx" {
   depends_on = [
     module.eks
   ]
+}
+
+resource "null_resource" "sealed_secrets_master_key" {
+  depends_on = [
+    module.eks
+  ]
+
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} && kubectl apply -f ${path.module}/sealed-secrets-master-key.yaml"
+  }
+}
+
+resource "null_resource" "argocd_root_app" {
+  depends_on = [
+    helm_release.argocd,
+    null_resource.sealed_secrets_master_key
+  ]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/../../../../argocd/root/aws-root-app.yaml"
+  }
 }
