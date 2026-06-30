@@ -20,3 +20,6 @@ override.tf.json
 
 sealed-secrets-master-key.yaml
 **/sealed-secrets-master-key.yaml
+
+
+local-dev-root-ca-secret.yaml
