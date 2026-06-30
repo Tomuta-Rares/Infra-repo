@@ -113,6 +113,7 @@ resource "null_resource" "argocd_root_app" {
   depends_on = [
     helm_release.argocd,
     helm_release.cert_manager,
+    null_resource.local_dev_root_ca,
     null_resource.sealed_secrets_master_key
   ]
 
@@ -139,4 +140,14 @@ resource "helm_release" "cert_manager" {
   depends_on = [
     module.eks
   ]
+}
+
+resource "null_resource" "local_dev_root_ca" {
+  depends_on = [
+    helm_release.cert_manager
+  ]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.module}/local-dev-root-ca-secret.yaml"
+  }
 }
