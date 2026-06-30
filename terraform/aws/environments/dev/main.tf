@@ -112,10 +112,31 @@ resource "null_resource" "sealed_secrets_master_key" {
 resource "null_resource" "argocd_root_app" {
   depends_on = [
     helm_release.argocd,
+    helm_release.cert_manager,
     null_resource.sealed_secrets_master_key
   ]
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/../../../../argocd/root/aws-root-app.yaml"
   }
+}
+
+
+resource "helm_release" "cert_manager" {
+  name             = "cert-manager"
+  repository       = "https://charts.jetstack.io"
+  chart            = "cert-manager"
+  namespace        = "cert-manager"
+  create_namespace = true
+
+  set = [
+    {
+      name  = "crds.enabled"
+      value = "true"
+    }
+  ]
+
+  depends_on = [
+    module.eks
+  ]
 }

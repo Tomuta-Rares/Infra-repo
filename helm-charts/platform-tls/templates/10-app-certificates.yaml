@@ -1,0 +1,51 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: shopping-tls
+  namespace: default
+spec:
+  secretName: shopping-tls-secret
+  dnsNames:
+    - shopping.local
+  issuerRef:
+    name: local-ca
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak-tls
+  namespace: keycloak
+spec:
+  secretName: keycloak-tls-secret
+  dnsNames:
+    - auth.local
+  issuerRef:
+    name: local-ca
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-tls
+  namespace: observability
+spec:
+  secretName: grafana-tls-secret
+  dnsNames:
+    - grafana.local
+  issuerRef:
+    name: local-ca
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-tls
+  namespace: argocd
+spec:
+  secretName: argocd-tls-secret
+  dnsNames:
+    - argocd.local
+  issuerRef:
+    name: local-ca
+    kind: ClusterIssuer
