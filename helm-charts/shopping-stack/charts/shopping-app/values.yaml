@@ -1,16 +1,13 @@
 replicaCount: 2
-
 image:
   repository: rarestomuta/shopping-app
-  tag: "15844013013174493dc6e3fa2cbbc569016b69ed"
+  tag: "2e3fde7c4fe41d7d949bdbe37bc476f3ba6e7193"
   pullPolicy: IfNotPresent
-
 frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    tag: "15844013013174493dc6e3fa2cbbc569016b69ed"
-
+    tag: "2e3fde7c4fe41d7d949bdbe37bc476f3ba6e7193"
 resources:
   requests:
     cpu: 100m
@@ -18,24 +15,20 @@ resources:
   limits:
     cpu: 300m
     memory: 512Mi
-
 service:
   type: ClusterIP
   port: 80
   targetPort: 8000
-
 ingress:
   enabled: true
   className: nginx
   host: shopping.local
   tlsSecret: shopping-tls-secret
-
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 4
   targetCPUUtilizationPercentage: 50
-
 env:
   databaseUrl: "mysql+mysqlconnector://user:userpass@mysql.mysql.svc.cluster.local:3306/shopping"
   keycloakIssuer: "https://auth.local/auth/realms/devops-lvlup"
