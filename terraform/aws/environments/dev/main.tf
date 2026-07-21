@@ -106,6 +106,7 @@ resource "null_resource" "sealed_secrets_master_key" {
 
   provisioner "local-exec" {
     command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} && kubectl apply -f ${path.module}/sealed-secrets-master-key.yaml"
+      
   }
 }
 

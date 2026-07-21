@@ -9,7 +9,7 @@ frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    #tag: "15844013013174493dc6e3fa2cbbc569016b69ed"
+    tag: "15844013013174493dc6e3fa2cbbc569016b69ed"
 
 resources:
   requests:
