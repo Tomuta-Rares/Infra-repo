@@ -1,13 +1,13 @@
 replicaCount: 2
 image:
   repository: rarestomuta/shopping-backend
-  tag: "36457a8aceb769fc496955f227463c52d97537bf"
+  tag: "7a25aff2c511a71290a7d86226668cdbfb203f62"
   pullPolicy: IfNotPresent
 frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    tag: "36457a8aceb769fc496955f227463c52d97537bf"
+    tag: "7a25aff2c511a71290a7d86226668cdbfb203f62"
 resources:
   requests:
     cpu: 100m
