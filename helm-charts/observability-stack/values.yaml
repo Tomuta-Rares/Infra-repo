@@ -143,3 +143,14 @@ tempo:
 #           Port 3100
 #           Labels job=fluent-bit
 #           Line_Format json
+
+
+
+prometheus:
+  enabled: true
+
+  grafana:
+    enabled: false
+
+  alertmanager:
+    enabled: false
