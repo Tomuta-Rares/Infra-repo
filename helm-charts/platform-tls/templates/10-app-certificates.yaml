@@ -2,7 +2,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: shopping-tls
-  namespace: default
+  namespace: shopping
 spec:
   secretName: shopping-tls-secret
   dnsNames:
