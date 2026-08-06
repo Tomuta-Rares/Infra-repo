@@ -159,3 +159,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+
+shopping-app:
+  serviceMonitor:
+    enabled: true

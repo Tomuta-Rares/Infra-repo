@@ -1,6 +1,9 @@
 dependencies:
-- name: keycloak
-  repository: https://charts.bitnami.com/bitnami
-  version: 21.1.1
-digest: sha256:3c16c92f2d1aa5be19ae5ca25238eaa9590fbd7490023357e55cf4c50dc2ff0c
-generated: "2026-03-23T16:20:44.808695992+02:00"
+- name: mysql
+  repository: file://charts/mysql
+  version: 0.1.0
+- name: shopping-app
+  repository: file://charts/shopping-app
+  version: 0.1.0
+digest: sha256:27d61f5a500f3ddd48703820fad92ddec8d78aff00710da29b49017c14d6379b
+generated: "2026-08-06T12:28:14.676277094+03:00"

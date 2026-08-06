@@ -47,3 +47,8 @@ env:
   environment: "local"
   otelExporterOtlpEndpoint: "http://observability-stack-tempo.observability.svc.cluster.local:4318"
   otelServiceName: "shopping-app"
+
+
+
+serviceMonitor:
+  enabled: true

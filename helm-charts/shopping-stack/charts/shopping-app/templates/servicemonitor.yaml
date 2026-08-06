@@ -1,0 +1,17 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: shopping-backend
+  labels:
+    release: observability-stack
+spec:
+  selector:
+    matchLabels:
+      app: shopping-backend-service
+
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+{{- end }}
