@@ -1,18 +1,14 @@
 namespace: shopping
-
 replicaCount: 2
-
 image:
   repository: rarestomuta/shopping-backend
-  tag: "7a25aff2c511a71290a7d86226668cdbfb203f62"
+  tag: "b51b5d88731c53d84f7bf7a028af86d8373a7067"
   pullPolicy: IfNotPresent
-
 frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    tag: "7a25aff2c511a71290a7d86226668cdbfb203f62"
-
+    tag: "b51b5d88731c53d84f7bf7a028af86d8373a7067"
 resources:
   requests:
     cpu: 100m
@@ -20,24 +16,20 @@ resources:
   limits:
     cpu: 300m
     memory: 512Mi
-
 service:
   type: ClusterIP
   port: 80
   targetPort: 8000
-
 ingress:
   enabled: true
   className: nginx
   host: shopping.local
   tlsSecret: shopping-tls-secret
-
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 4
   targetCPUUtilizationPercentage: 50
-
 env:
   databaseUrl: "mysql+mysqlconnector://user:userpass@mysql.mysql.svc.cluster.local:3306/shopping"
   keycloakIssuer: "https://auth.local/auth/realms/devops-lvlup"
@@ -47,8 +39,5 @@ env:
   environment: "local"
   otelExporterOtlpEndpoint: "http://observability-stack-tempo.observability.svc.cluster.local:4318"
   otelServiceName: "shopping-app"
-
-
-
 serviceMonitor:
   enabled: true
