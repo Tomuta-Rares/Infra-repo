@@ -87,6 +87,13 @@ grafana:
           access: proxy
           url: http://observability-stack-tempo:3100
 
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://observability-stack-promet-prometheus.observability:9090
+          isDefault: false
+          editable: false
+
 tempo:
   enabled: true
 

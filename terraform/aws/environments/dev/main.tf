@@ -43,7 +43,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.7"
+  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.8"
 
   cluster_name        = "dev-shopping-eks"
   subnet_ids          = module.vpc.public_subnet_ids
@@ -83,6 +83,44 @@ resource "helm_release" "argocd" {
   create_namespace = true
 
   depends_on = [
+    helm_release.aws_load_balancer_controller
+  ]
+}
+
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = module.eks.cluster_name
+    },
+    {
+      name  = "region"
+      value = var.aws_region
+    },
+    {
+      name  = "vpcId"
+      value = module.vpc.vpc_id
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = module.eks.aws_load_balancer_controller_role_arn
+    }
+  ]
+
+  depends_on = [
     module.eks
   ]
 }
@@ -94,8 +132,19 @@ resource "helm_release" "ingress_nginx" {
   namespace        = "ingress-nginx"
   create_namespace = true
 
+  set = [
+    {
+      name  = "controller.service.loadBalancerClass"
+      value = "service.k8s.aws/nlb"
+    },
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
+      value = "internet-facing"
+    }
+  ]
+
   depends_on = [
-    module.eks
+    helm_release.aws_load_balancer_controller
   ]
 }
 
@@ -106,7 +155,7 @@ resource "null_resource" "sealed_secrets_master_key" {
 
   provisioner "local-exec" {
     command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} && kubectl apply -f ${path.module}/sealed-secrets-master-key.yaml"
-      
+
   }
 }
 
