@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shopping-app-alerts
+  namespace: observability
+  labels:
+    release: observability-stack
+spec:
+  groups:
+    - name: shopping-app
+      rules:
+        - alert: ShoppingAppHigh5xxRate
+          expr: |
+            100 *
+            (
+              (
+                sum(rate(shopping_http_requests_total{status_code=~"5.."}[5m]))
+                or vector(0)
+              )
+              /
+              sum(rate(shopping_http_requests_total[5m]))
+            ) > 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Shopping App high 5xx error rate"
+            description: "5xx error rate has been above 5% for 5 minutes."
