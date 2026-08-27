@@ -161,3 +161,21 @@ prometheus:
 
   alertmanager:
     enabled: true
+
+    config:
+      global:
+        resolve_timeout: 5m
+
+      route:
+        receiver: "webhook"
+        group_by:
+          - alertname
+        group_wait: 10s
+        group_interval: 1m
+        repeat_interval: 1h
+
+      receivers:
+        - name: "webhook"
+          webhook_configs:
+            - url: "https://webhook.site/1e9454c7-c2d9-4828-b2b0-e8633a0f890f"
+              send_resolved: true
