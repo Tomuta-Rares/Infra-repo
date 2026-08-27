@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopping-app-slo-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  shopping-app-slo.json: |
+{{ .Files.Get "dashboards/shopping-app-slo.json" | indent 4 }}

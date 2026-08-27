@@ -72,6 +72,12 @@ grafana:
   testFramework:
     enabled: false
 
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -88,6 +94,7 @@ grafana:
           url: http://observability-stack-tempo:3100
 
         - name: Prometheus
+          uid: prometheus
           type: prometheus
           access: proxy
           url: http://observability-stack-promet-prometheus.observability:9090
