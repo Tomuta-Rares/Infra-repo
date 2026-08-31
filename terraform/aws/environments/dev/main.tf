@@ -63,7 +63,7 @@ module "eks" {
 }
 
 # ============================================================
-# EKS DATA SOURCES
+# EKS DATA
 # ============================================================
 
 data "aws_eks_cluster" "this" {
@@ -83,7 +83,7 @@ data "aws_eks_cluster_auth" "this" {
 }
 
 # ============================================================
-# HELM PROVIDER
+# HELM
 # ============================================================
 
 provider "helm" {
@@ -194,8 +194,9 @@ resource "helm_release" "cert_manager" {
     }
   ]
 
+  # Evitam race-ul cu webhook-ul AWS LB Controller.
   depends_on = [
-    module.eks
+    helm_release.aws_load_balancer_controller
   ]
 }
 
@@ -223,38 +224,12 @@ resource "helm_release" "argocd" {
 # ============================================================
 
 resource "null_resource" "sealed_secrets_master_key" {
-  triggers = {
-    cluster_name = module.eks.cluster_name
-    aws_region   = var.aws_region
-
-    manifest_sha = filesha256(
-      "${path.module}/sealed-secrets-master-key.yaml"
-    )
-  }
-
   depends_on = [
     module.eks
   ]
 
   provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-
-    command = <<-EOT
-      set -e
-
-      KUBECONFIG_FILE="$(mktemp)"
-      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
-
-      aws eks update-kubeconfig \
-        --name "${module.eks.cluster_name}" \
-        --region "${var.aws_region}" \
-        --kubeconfig "$KUBECONFIG_FILE"
-
-      kubectl \
-        --kubeconfig "$KUBECONFIG_FILE" \
-        apply \
-        -f "${path.module}/sealed-secrets-master-key.yaml"
-    EOT
+    command = "KCFG=$(mktemp) && aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} --kubeconfig $KCFG && kubectl --kubeconfig $KCFG apply -f ${path.module}/sealed-secrets-master-key.yaml && rm -f $KCFG"
   }
 }
 
@@ -263,43 +238,52 @@ resource "null_resource" "sealed_secrets_master_key" {
 # ============================================================
 
 resource "null_resource" "local_dev_root_ca" {
-  triggers = {
-    cluster_name = module.eks.cluster_name
-    aws_region   = var.aws_region
-
-    manifest_sha = filesha256(
-      "${path.module}/local-dev-root-ca-secret.yaml"
-    )
-  }
-
   depends_on = [
     helm_release.cert_manager
   ]
 
   provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-
-    command = <<-EOT
-      set -e
-
-      KUBECONFIG_FILE="$(mktemp)"
-      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
-
-      aws eks update-kubeconfig \
-        --name "${module.eks.cluster_name}" \
-        --region "${var.aws_region}" \
-        --kubeconfig "$KUBECONFIG_FILE"
-
-      kubectl \
-        --kubeconfig "$KUBECONFIG_FILE" \
-        apply \
-        -f "${path.module}/local-dev-root-ca-secret.yaml"
-    EOT
+    command = "KCFG=$(mktemp) && aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} --kubeconfig $KCFG && kubectl --kubeconfig $KCFG apply -f ${path.module}/local-dev-root-ca-secret.yaml && rm -f $KCFG"
   }
 }
 
 # ============================================================
-# ARGOCD ROOT APPLICATION
+# PRE-DESTROY LOAD BALANCER CLEANUP
+#
+# Resource-ul nu face nimic la CREATE.
+#
+# La DESTROY:
+# - clusterul exista
+# - AWS LB Controller exista
+# - ingress-nginx exista
+# - VPC-ul exista
+#
+# Stergem Service-ul LoadBalancer si asteptam pana cand
+# NLB-ul dispare din AWS.
+# ============================================================
+
+resource "null_resource" "load_balancer_cleanup" {
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    aws_region   = var.aws_region
+  }
+
+  depends_on = [
+    module.vpc,
+    helm_release.aws_load_balancer_controller,
+    helm_release.ingress_nginx
+  ]
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = fail
+
+    command = "KCFG=$(mktemp); aws eks update-kubeconfig --name ${self.triggers.cluster_name} --region ${self.triggers.aws_region} --kubeconfig $KCFG; LB_HOST=$(kubectl --kubeconfig $KCFG get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true); kubectl --kubeconfig $KCFG delete svc ingress-nginx-controller -n ingress-nginx --ignore-not-found=true --wait=true --timeout=10m; if [ -n \"$LB_HOST\" ]; then LB_NAME=${LB_HOST%%.*}; echo \"Waiting for AWS load balancer $LB_NAME to disappear...\"; for i in $(seq 1 60); do if ! aws elbv2 describe-load-balancers --names \"$LB_NAME\" --region ${self.triggers.aws_region} >/dev/null 2>&1; then echo \"Load balancer deleted.\"; rm -f $KCFG; exit 0; fi; sleep 10; done; echo \"ERROR: Load balancer still exists after 10 minutes.\"; rm -f $KCFG; exit 1; fi; rm -f $KCFG"
+  }
+}
+
+# ============================================================
+# ARGOCD ROOT APP
 # ============================================================
 
 resource "null_resource" "argocd_root_app" {
@@ -314,111 +298,34 @@ resource "null_resource" "argocd_root_app" {
 
   depends_on = [
     helm_release.argocd,
-    helm_release.ingress_nginx,
     helm_release.cert_manager,
     null_resource.local_dev_root_ca,
-    null_resource.sealed_secrets_master_key
+    null_resource.sealed_secrets_master_key,
+
+    # IMPORTANT:
+    # Creeaza cleanup-ul inainte de root app.
+    # La destroy ordinea se inverseaza:
+    #
+    # root app cleanup
+    #       ↓
+    # load balancer cleanup
+    #       ↓
+    # Helm / EKS / VPC
+    null_resource.load_balancer_cleanup
   ]
 
-  # ----------------------------------------------------------
   # CREATE
-  # ----------------------------------------------------------
-
   provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-
-    command = <<-EOT
-      set -e
-
-      KUBECONFIG_FILE="$(mktemp)"
-      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
-
-      aws eks update-kubeconfig \
-        --name "${self.triggers.cluster_name}" \
-        --region "${self.triggers.aws_region}" \
-        --kubeconfig "$KUBECONFIG_FILE"
-
-      kubectl \
-        --kubeconfig "$KUBECONFIG_FILE" \
-        apply \
-        -f "${self.triggers.manifest_path}"
-    EOT
+    command = "KCFG=$(mktemp) && aws eks update-kubeconfig --name ${self.triggers.cluster_name} --region ${self.triggers.aws_region} --kubeconfig $KCFG && kubectl --kubeconfig $KCFG apply -f ${self.triggers.manifest_path} && rm -f $KCFG"
   }
 
-  # ----------------------------------------------------------
   # DESTROY
-  # ----------------------------------------------------------
-
+  #
+  # Stergem mai intai aplicatiile ArgoCD si resursele lor.
   provisioner "local-exec" {
     when       = destroy
     on_failure = fail
 
-    interpreter = ["/bin/bash", "-c"]
-
-    command = <<-EOT
-      set -e
-
-      KUBECONFIG_FILE="$(mktemp)"
-      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
-
-      aws eks update-kubeconfig \
-        --name "${self.triggers.cluster_name}" \
-        --region "${self.triggers.aws_region}" \
-        --kubeconfig "$KUBECONFIG_FILE"
-
-      echo "Preparing ArgoCD applications for deletion..."
-
-      for app in $(
-        kubectl \
-          --kubeconfig "$KUBECONFIG_FILE" \
-          -n argocd \
-          get applications.argoproj.io \
-          -o name 2>/dev/null
-      ); do
-
-        kubectl \
-          --kubeconfig "$KUBECONFIG_FILE" \
-          -n argocd \
-          patch "$app" \
-          --type merge \
-          -p '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]}}' \
-          || true
-      done
-
-      echo "Deleting ArgoCD root application..."
-
-      kubectl \
-        --kubeconfig "$KUBECONFIG_FILE" \
-        delete \
-        -f "${self.triggers.manifest_path}" \
-        --ignore-not-found=true \
-        --wait=true \
-        --timeout=15m
-
-      echo "Waiting for ArgoCD applications to disappear..."
-
-      for i in $(seq 1 120); do
-
-        REMAINING=$(
-          kubectl \
-            --kubeconfig "$KUBECONFIG_FILE" \
-            -n argocd \
-            get applications.argoproj.io \
-            --no-headers 2>/dev/null \
-            | wc -l
-        )
-
-        if [ "$REMAINING" -eq 0 ]; then
-          echo "All ArgoCD applications deleted."
-          exit 0
-        fi
-
-        echo "$REMAINING application(s) still deleting..."
-        sleep 5
-      done
-
-      echo "ERROR: ArgoCD applications could not be cleaned up."
-      exit 1
-    EOT
+    command = "KCFG=$(mktemp); aws eks update-kubeconfig --name ${self.triggers.cluster_name} --region ${self.triggers.aws_region} --kubeconfig $KCFG; for APP in $(kubectl --kubeconfig $KCFG -n argocd get applications.argoproj.io -o name 2>/dev/null || true); do kubectl --kubeconfig $KCFG -n argocd patch $APP --type merge -p '{\"metadata\":{\"finalizers\":[\"resources-finalizer.argocd.argoproj.io\"]}}' || true; done; kubectl --kubeconfig $KCFG delete -f ${self.triggers.manifest_path} --ignore-not-found=true --wait=true --timeout=10m; for i in $(seq 1 60); do COUNT=$(kubectl --kubeconfig $KCFG -n argocd get applications.argoproj.io --no-headers 2>/dev/null | wc -l); if [ \"$COUNT\" -eq 0 ]; then echo \"ArgoCD applications deleted.\"; rm -f $KCFG; exit 0; fi; echo \"Waiting for $COUNT ArgoCD application(s)...\"; sleep 10; done; echo \"ERROR: ArgoCD applications still exist.\"; rm -f $KCFG; exit 1"
   }
 }
