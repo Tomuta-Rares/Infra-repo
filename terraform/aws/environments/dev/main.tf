@@ -269,7 +269,6 @@ resource "null_resource" "load_balancer_cleanup" {
   }
 
   depends_on = [
-    module.vpc,
     helm_release.aws_load_balancer_controller,
     helm_release.ingress_nginx
   ]
@@ -278,7 +277,7 @@ resource "null_resource" "load_balancer_cleanup" {
     when       = destroy
     on_failure = fail
 
-    command = "KCFG=$(mktemp); aws eks update-kubeconfig --name ${self.triggers.cluster_name} --region ${self.triggers.aws_region} --kubeconfig $KCFG; LB_HOST=$(kubectl --kubeconfig $KCFG get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true); kubectl --kubeconfig $KCFG delete svc ingress-nginx-controller -n ingress-nginx --ignore-not-found=true --wait=true --timeout=10m; if [ -n \"$LB_HOST\" ]; then LB_NAME=${LB_HOST%%.*}; echo \"Waiting for AWS load balancer $LB_NAME to disappear...\"; for i in $(seq 1 60); do if ! aws elbv2 describe-load-balancers --names \"$LB_NAME\" --region ${self.triggers.aws_region} >/dev/null 2>&1; then echo \"Load balancer deleted.\"; rm -f $KCFG; exit 0; fi; sleep 10; done; echo \"ERROR: Load balancer still exists after 10 minutes.\"; rm -f $KCFG; exit 1; fi; rm -f $KCFG"
+    command = "KCFG=$(mktemp); aws eks update-kubeconfig --name ${self.triggers.cluster_name} --region ${self.triggers.aws_region} --kubeconfig $KCFG; LB_HOST=$(kubectl --kubeconfig $KCFG get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true); kubectl --kubeconfig $KCFG delete svc ingress-nginx-controller -n ingress-nginx --ignore-not-found=true --wait=true --timeout=10m; if [ -n \"$LB_HOST\" ]; then LB_NAME=$(printf '%s' \"$LB_HOST\" | cut -d. -f1); echo \"Waiting for AWS load balancer $LB_NAME to disappear...\"; for i in $(seq 1 60); do if ! aws elbv2 describe-load-balancers --names \"$LB_NAME\" --region ${self.triggers.aws_region} >/dev/null 2>&1; then echo \"Load balancer deleted.\"; rm -f $KCFG; exit 0; fi; sleep 10; done; echo \"ERROR: Load balancer still exists after 10 minutes.\"; rm -f $KCFG; exit 1; fi; rm -f $KCFG"
   }
 }
 
