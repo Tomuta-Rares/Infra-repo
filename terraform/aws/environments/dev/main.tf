@@ -30,6 +30,11 @@ provider "aws" {
   region = var.aws_region
 }
 
+
+# ============================================================
+# VPC
+# ============================================================
+
 module "vpc" {
   source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/vpc?ref=v0.2.1"
 
@@ -39,8 +44,16 @@ module "vpc" {
   public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
   private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
 
-  availability_zones = ["eu-central-1a", "eu-central-1b"]
+  availability_zones = [
+    "eu-central-1a",
+    "eu-central-1b"
+  ]
 }
+
+
+# ============================================================
+# EKS
+# ============================================================
 
 module "eks" {
   source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.8"
@@ -50,6 +63,11 @@ module "eks" {
   node_subnet_ids     = module.vpc.public_subnet_ids
   node_instance_types = ["t3.small"]
 }
+
+
+# ============================================================
+# EKS DATA
+# ============================================================
 
 data "aws_eks_cluster" "this" {
   name = module.eks.cluster_name
@@ -67,31 +85,40 @@ data "aws_eks_cluster_auth" "this" {
   ]
 }
 
+
+# ============================================================
+# HELM PROVIDER
+# ============================================================
+
 provider "helm" {
   kubernetes = {
-    host                   = data.aws_eks_cluster.this.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-    token                  = data.aws_eks_cluster_auth.this.token
+    host = data.aws_eks_cluster.this.endpoint
+
+    cluster_ca_certificate = base64decode(
+      data.aws_eks_cluster.this.certificate_authority[0].data
+    )
+
+    token = data.aws_eks_cluster_auth.this.token
   }
 }
 
-resource "helm_release" "argocd" {
-  name             = "argocd"
-  repository       = "https://argoproj.github.io/argo-helm"
-  chart            = "argo-cd"
-  namespace        = "argocd"
-  create_namespace = true
 
-  depends_on = [
-    helm_release.aws_load_balancer_controller
-  ]
-}
+# ============================================================
+# AWS LOAD BALANCER CONTROLLER
+# ============================================================
 
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
+
+  # Daca release-ul exista deja dar lipseste din Terraform state,
+  # folosim helm upgrade --install in loc de helm install.
+  upgrade_install = true
+
+  wait    = true
+  timeout = 600
 
   set = [
     {
@@ -125,12 +152,22 @@ resource "helm_release" "aws_load_balancer_controller" {
   ]
 }
 
+
+# ============================================================
+# INGRESS NGINX
+# ============================================================
+
 resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
   namespace        = "ingress-nginx"
   create_namespace = true
+
+  upgrade_install = true
+
+  wait    = true
+  timeout = 600
 
   set = [
     {
@@ -148,30 +185,10 @@ resource "helm_release" "ingress_nginx" {
   ]
 }
 
-resource "null_resource" "sealed_secrets_master_key" {
-  depends_on = [
-    module.eks
-  ]
 
-  provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} && kubectl apply -f ${path.module}/sealed-secrets-master-key.yaml"
-
-  }
-}
-
-resource "null_resource" "argocd_root_app" {
-  depends_on = [
-    helm_release.argocd,
-    helm_release.cert_manager,
-    null_resource.local_dev_root_ca,
-    null_resource.sealed_secrets_master_key
-  ]
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/../../../../argocd/root/aws-root-app.yaml"
-  }
-}
-
+# ============================================================
+# CERT MANAGER
+# ============================================================
 
 resource "helm_release" "cert_manager" {
   name             = "cert-manager"
@@ -179,6 +196,13 @@ resource "helm_release" "cert_manager" {
   chart            = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
+
+  # Important pentru situatia ta actuala:
+  # release-ul exista in cluster, dar lipseste din Terraform state.
+  upgrade_install = true
+
+  wait    = true
+  timeout = 600
 
   set = [
     {
@@ -192,12 +216,251 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
+
+# ============================================================
+# ARGOCD
+# ============================================================
+
+resource "helm_release" "argocd" {
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  namespace        = "argocd"
+  create_namespace = true
+
+  upgrade_install = true
+
+  wait    = true
+  timeout = 600
+
+  depends_on = [
+    helm_release.aws_load_balancer_controller
+  ]
+}
+
+
+# ============================================================
+# SEALED SECRETS MASTER KEY
+# ============================================================
+
+resource "null_resource" "sealed_secrets_master_key" {
+
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    aws_region   = var.aws_region
+
+    manifest_sha = filesha256(
+      "${path.module}/sealed-secrets-master-key.yaml"
+    )
+  }
+
+  depends_on = [
+    module.eks
+  ]
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+
+    command = <<-EOT
+      set -e
+
+      KUBECONFIG_FILE="$(mktemp)"
+      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
+
+      aws eks update-kubeconfig \
+        --name "${module.eks.cluster_name}" \
+        --region "${var.aws_region}" \
+        --kubeconfig "$KUBECONFIG_FILE"
+
+      kubectl \
+        --kubeconfig "$KUBECONFIG_FILE" \
+        apply \
+        -f "${path.module}/sealed-secrets-master-key.yaml"
+    EOT
+  }
+}
+
+
+# ============================================================
+# LOCAL DEV ROOT CA
+# ============================================================
+
 resource "null_resource" "local_dev_root_ca" {
+
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    aws_region   = var.aws_region
+
+    manifest_sha = filesha256(
+      "${path.module}/local-dev-root-ca-secret.yaml"
+    )
+  }
+
   depends_on = [
     helm_release.cert_manager
   ]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/local-dev-root-ca-secret.yaml"
+    interpreter = ["/bin/bash", "-c"]
+
+    command = <<-EOT
+      set -e
+
+      KUBECONFIG_FILE="$(mktemp)"
+      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
+
+      aws eks update-kubeconfig \
+        --name "${module.eks.cluster_name}" \
+        --region "${var.aws_region}" \
+        --kubeconfig "$KUBECONFIG_FILE"
+
+      kubectl \
+        --kubeconfig "$KUBECONFIG_FILE" \
+        apply \
+        -f "${path.module}/local-dev-root-ca-secret.yaml"
+    EOT
+  }
+}
+
+
+# ============================================================
+# ARGOCD ROOT APPLICATION
+# ============================================================
+
+resource "null_resource" "argocd_root_app" {
+
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    aws_region   = var.aws_region
+
+    manifest_path = abspath(
+      "${path.module}/../../../../argocd/root/aws-root-app.yaml"
+    )
+  }
+
+  depends_on = [
+    helm_release.argocd,
+    helm_release.ingress_nginx,
+    helm_release.cert_manager,
+    null_resource.local_dev_root_ca,
+    null_resource.sealed_secrets_master_key
+  ]
+
+
+  # ----------------------------------------------------------
+  # CREATE
+  # ----------------------------------------------------------
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+
+    command = <<-EOT
+      set -e
+
+      KUBECONFIG_FILE="$(mktemp)"
+      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
+
+      aws eks update-kubeconfig \
+        --name "${self.triggers.cluster_name}" \
+        --region "${self.triggers.aws_region}" \
+        --kubeconfig "$KUBECONFIG_FILE"
+
+      kubectl \
+        --kubeconfig "$KUBECONFIG_FILE" \
+        apply \
+        -f "${self.triggers.manifest_path}"
+    EOT
+  }
+
+
+  # ----------------------------------------------------------
+  # DESTROY
+  #
+  # Inainte sa dispara ArgoCD / ingress / EKS,
+  # stergem aplicatiile gestionate de ArgoCD.
+  # ----------------------------------------------------------
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = fail
+
+    interpreter = ["/bin/bash", "-c"]
+
+    command = <<-EOT
+      set -e
+
+      KUBECONFIG_FILE="$(mktemp)"
+      trap 'rm -f "$KUBECONFIG_FILE"' EXIT
+
+      aws eks update-kubeconfig \
+        --name "${self.triggers.cluster_name}" \
+        --region "${self.triggers.aws_region}" \
+        --kubeconfig "$KUBECONFIG_FILE"
+
+
+      echo "Preparing ArgoCD applications for deletion..."
+
+
+      # Adaugam finalizer pe fiecare Application.
+      # Astfel ArgoCD sterge si resursele gestionate de aplicatie.
+
+      for app in $(
+        kubectl \
+          --kubeconfig "$KUBECONFIG_FILE" \
+          -n argocd \
+          get applications.argoproj.io \
+          -o name 2>/dev/null
+      ); do
+
+        kubectl \
+          --kubeconfig "$KUBECONFIG_FILE" \
+          -n argocd \
+          patch "$app" \
+          --type merge \
+          -p '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]}}' \
+          || true
+
+      done
+
+
+      echo "Deleting ArgoCD root application..."
+
+
+      kubectl \
+        --kubeconfig "$KUBECONFIG_FILE" \
+        delete \
+        -f "${self.triggers.manifest_path}" \
+        --ignore-not-found=true \
+        --wait=true \
+        --timeout=15m
+
+
+      echo "Checking remaining ArgoCD applications..."
+
+
+      for i in $(seq 1 120); do
+
+        REMAINING=$(
+          kubectl \
+            --kubeconfig "$KUBECONFIG_FILE" \
+            -n argocd \
+            get applications.argoproj.io \
+            --no-headers 2>/dev/null \
+            | wc -l
+        )
+
+        if [ "$REMAINING" -eq 0 ]; then
+          echo "All ArgoCD applications deleted."
+          exit 0
+        fi
+
+        echo "$REMAINING application(s) still deleting..."
+        sleep 5
+      done
+
+
+      echo "ERROR: ArgoCD applications could not be cleaned up."
+      exit 1
+    EOT
   }
 }
