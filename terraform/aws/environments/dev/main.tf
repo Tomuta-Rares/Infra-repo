@@ -30,7 +30,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-
 # ============================================================
 # VPC
 # ============================================================
@@ -50,7 +49,6 @@ module "vpc" {
   ]
 }
 
-
 # ============================================================
 # EKS
 # ============================================================
@@ -64,9 +62,8 @@ module "eks" {
   node_instance_types = ["t3.small"]
 }
 
-
 # ============================================================
-# EKS DATA
+# EKS DATA SOURCES
 # ============================================================
 
 data "aws_eks_cluster" "this" {
@@ -85,7 +82,6 @@ data "aws_eks_cluster_auth" "this" {
   ]
 }
 
-
 # ============================================================
 # HELM PROVIDER
 # ============================================================
@@ -102,7 +98,6 @@ provider "helm" {
   }
 }
 
-
 # ============================================================
 # AWS LOAD BALANCER CONTROLLER
 # ============================================================
@@ -112,10 +107,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
-
-  # Daca release-ul exista deja dar lipseste din Terraform state,
-  # folosim helm upgrade --install in loc de helm install.
-  upgrade_install = true
 
   wait    = true
   timeout = 600
@@ -152,7 +143,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   ]
 }
 
-
 # ============================================================
 # INGRESS NGINX
 # ============================================================
@@ -163,8 +153,6 @@ resource "helm_release" "ingress_nginx" {
   chart            = "ingress-nginx"
   namespace        = "ingress-nginx"
   create_namespace = true
-
-  upgrade_install = true
 
   wait    = true
   timeout = 600
@@ -185,7 +173,6 @@ resource "helm_release" "ingress_nginx" {
   ]
 }
 
-
 # ============================================================
 # CERT MANAGER
 # ============================================================
@@ -196,10 +183,6 @@ resource "helm_release" "cert_manager" {
   chart            = "cert-manager"
   namespace        = "cert-manager"
   create_namespace = true
-
-  # Important pentru situatia ta actuala:
-  # release-ul exista in cluster, dar lipseste din Terraform state.
-  upgrade_install = true
 
   wait    = true
   timeout = 600
@@ -216,7 +199,6 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
-
 # ============================================================
 # ARGOCD
 # ============================================================
@@ -228,8 +210,6 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
-  upgrade_install = true
-
   wait    = true
   timeout = 600
 
@@ -238,13 +218,11 @@ resource "helm_release" "argocd" {
   ]
 }
 
-
 # ============================================================
 # SEALED SECRETS MASTER KEY
 # ============================================================
 
 resource "null_resource" "sealed_secrets_master_key" {
-
   triggers = {
     cluster_name = module.eks.cluster_name
     aws_region   = var.aws_region
@@ -280,13 +258,11 @@ resource "null_resource" "sealed_secrets_master_key" {
   }
 }
 
-
 # ============================================================
 # LOCAL DEV ROOT CA
 # ============================================================
 
 resource "null_resource" "local_dev_root_ca" {
-
   triggers = {
     cluster_name = module.eks.cluster_name
     aws_region   = var.aws_region
@@ -322,13 +298,11 @@ resource "null_resource" "local_dev_root_ca" {
   }
 }
 
-
 # ============================================================
 # ARGOCD ROOT APPLICATION
 # ============================================================
 
 resource "null_resource" "argocd_root_app" {
-
   triggers = {
     cluster_name = module.eks.cluster_name
     aws_region   = var.aws_region
@@ -345,7 +319,6 @@ resource "null_resource" "argocd_root_app" {
     null_resource.local_dev_root_ca,
     null_resource.sealed_secrets_master_key
   ]
-
 
   # ----------------------------------------------------------
   # CREATE
@@ -372,12 +345,8 @@ resource "null_resource" "argocd_root_app" {
     EOT
   }
 
-
   # ----------------------------------------------------------
   # DESTROY
-  #
-  # Inainte sa dispara ArgoCD / ingress / EKS,
-  # stergem aplicatiile gestionate de ArgoCD.
   # ----------------------------------------------------------
 
   provisioner "local-exec" {
@@ -397,12 +366,7 @@ resource "null_resource" "argocd_root_app" {
         --region "${self.triggers.aws_region}" \
         --kubeconfig "$KUBECONFIG_FILE"
 
-
       echo "Preparing ArgoCD applications for deletion..."
-
-
-      # Adaugam finalizer pe fiecare Application.
-      # Astfel ArgoCD sterge si resursele gestionate de aplicatie.
 
       for app in $(
         kubectl \
@@ -419,12 +383,9 @@ resource "null_resource" "argocd_root_app" {
           --type merge \
           -p '{"metadata":{"finalizers":["resources-finalizer.argocd.argoproj.io"]}}' \
           || true
-
       done
 
-
       echo "Deleting ArgoCD root application..."
-
 
       kubectl \
         --kubeconfig "$KUBECONFIG_FILE" \
@@ -434,9 +395,7 @@ resource "null_resource" "argocd_root_app" {
         --wait=true \
         --timeout=15m
 
-
-      echo "Checking remaining ArgoCD applications..."
-
+      echo "Waiting for ArgoCD applications to disappear..."
 
       for i in $(seq 1 120); do
 
@@ -457,7 +416,6 @@ resource "null_resource" "argocd_root_app" {
         echo "$REMAINING application(s) still deleting..."
         sleep 5
       done
-
 
       echo "ERROR: ArgoCD applications could not be cleaned up."
       exit 1
