@@ -53,18 +53,10 @@ module "eks" {
 
 data "aws_eks_cluster" "this" {
   name = module.eks.cluster_name
-
-  depends_on = [
-    module.eks
-  ]
 }
 
 data "aws_eks_cluster_auth" "this" {
   name = module.eks.cluster_name
-
-  depends_on = [
-    module.eks
-  ]
 }
 
 provider "helm" {
@@ -145,6 +137,31 @@ resource "helm_release" "ingress_nginx" {
 
   depends_on = [
     helm_release.aws_load_balancer_controller
+  ]
+}
+
+resource "helm_release" "external_secrets" {
+  name       = "external-secrets"
+  repository = "https://charts.external-secrets.io"
+  chart      = "external-secrets"
+  version    = "2.9.0"
+
+  namespace        = "external-secrets"
+  create_namespace = true
+
+  set = [
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "external-secrets"
+    }
+  ]
+
+  depends_on = [
+    module.eks
   ]
 }
 
