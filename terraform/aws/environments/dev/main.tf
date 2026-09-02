@@ -218,3 +218,10 @@ resource "null_resource" "local_dev_root_ca" {
     command = "kubectl apply -f ${path.module}/local-dev-root-ca-secret.yaml"
   }
 }
+
+
+resource "aws_secretsmanager_secret" "mysql" {
+  name = "dev-shopping/mysql"
+
+  recovery_window_in_days = 0
+}

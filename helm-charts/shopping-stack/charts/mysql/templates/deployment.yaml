@@ -30,7 +30,7 @@ spec:
               # value: {{ .Values.mysql.password | quote }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.secret.name }}
+                  name: mysql-pass-aws
                   key: password
           securityContext:
             runAsUser: 999
