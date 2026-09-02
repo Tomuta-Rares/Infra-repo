@@ -21,7 +21,10 @@ spec:
       {{ toYaml .Values.resources | nindent 12 }}
           env:
             - name: DATABASE_URL
-              value: {{ .Values.env.databaseUrl | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: shopping-db-secret
+                  key: DATABASE_URL
             - name: KEYCLOAK_ISSUER
               value: {{ .Values.env.keycloakIssuer | quote }}
             - name: KEYCLOAK_JWKS_URL
