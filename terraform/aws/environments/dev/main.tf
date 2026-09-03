@@ -8,11 +8,6 @@ terraform {
   }
 
   required_providers {
-
-    random = {
-      source = "hashicorp/random"
-    }
-
     aws = {
       source = "hashicorp/aws"
     }
@@ -58,10 +53,18 @@ module "eks" {
 
 data "aws_eks_cluster" "this" {
   name = module.eks.cluster_name
+
+  depends_on = [
+    module.eks
+  ]
 }
 
 data "aws_eks_cluster_auth" "this" {
   name = module.eks.cluster_name
+
+  depends_on = [
+    module.eks
+  ]
 }
 
 provider "helm" {
@@ -145,31 +148,6 @@ resource "helm_release" "ingress_nginx" {
   ]
 }
 
-resource "helm_release" "external_secrets" {
-  name       = "external-secrets"
-  repository = "https://charts.external-secrets.io"
-  chart      = "external-secrets"
-  version    = "2.9.0"
-
-  namespace        = "external-secrets"
-  create_namespace = true
-
-  set = [
-    {
-      name  = "serviceAccount.create"
-      value = "true"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = "external-secrets"
-    }
-  ]
-
-  depends_on = [
-    module.eks
-  ]
-}
-
 resource "null_resource" "sealed_secrets_master_key" {
   depends_on = [
     module.eks
@@ -186,8 +164,7 @@ resource "null_resource" "argocd_root_app" {
     helm_release.argocd,
     helm_release.cert_manager,
     null_resource.local_dev_root_ca,
-    null_resource.sealed_secrets_master_key,
-    null_resource.external_secrets_store
+    null_resource.sealed_secrets_master_key
   ]
 
   provisioner "local-exec" {
@@ -222,48 +199,5 @@ resource "null_resource" "local_dev_root_ca" {
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${path.module}/local-dev-root-ca-secret.yaml"
-  }
-}
-
-
-resource "aws_secretsmanager_secret" "mysql" {
-  name = "dev-shopping/mysql"
-
-  recovery_window_in_days = 0
-}
-
-resource "random_password" "mysql_user" {
-  length  = 24
-  special = false
-}
-
-resource "random_password" "mysql_root" {
-  length  = 24
-  special = false
-}
-
-resource "aws_secretsmanager_secret_version" "mysql" {
-  secret_id = aws_secretsmanager_secret.mysql.id
-
-  secret_string = jsonencode({
-    password     = random_password.mysql_user.result
-    rootPassword = random_password.mysql_root.result
-    databaseUrl  = "mysql+mysqlconnector://user:${random_password.mysql_user.result}@mysql.mysql.svc.cluster.local:3306/shopping"
-  })
-}
-
-
-resource "null_resource" "external_secrets_store" {
-  depends_on = [
-    helm_release.external_secrets,
-    aws_secretsmanager_secret_version.mysql
-  ]
-
-  triggers = {
-    manifest_sha = filesha256("${path.module}/../../../../platform/external-secrets/cluster-secret-store.yaml")
-  }
-
-  provisioner "local-exec" {
-    command = "KUBECONFIG_FILE=$(mktemp) && aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} --kubeconfig $KUBECONFIG_FILE && kubectl --kubeconfig $KUBECONFIG_FILE apply -f ${path.module}/../../../../platform/external-secrets/cluster-secret-store.yaml && rm -f $KUBECONFIG_FILE"
   }
 }
