@@ -43,7 +43,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.12"
+  source = "git::git@github.com:Tomuta-Rares/terraform-aws-modules.git//modules/eks?ref=v0.2.8"
 
   cluster_name        = "dev-shopping-eks"
   subnet_ids          = module.vpc.public_subnet_ids

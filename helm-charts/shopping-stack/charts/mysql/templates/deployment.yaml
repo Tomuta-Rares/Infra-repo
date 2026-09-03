@@ -21,10 +21,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
             - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-pass-aws
-                  key: root-password
+              value: {{ .Values.mysql.rootPassword | quote }}
             - name: MYSQL_DATABASE
               value: {{ .Values.mysql.database | quote }}
             - name: MYSQL_USER
@@ -33,7 +30,7 @@ spec:
               # value: {{ .Values.mysql.password | quote }}
               valueFrom:
                 secretKeyRef:
-                  name: mysql-pass-aws
+                  name: {{ .Values.secret.name }}
                   key: password
           securityContext:
             runAsUser: 999
