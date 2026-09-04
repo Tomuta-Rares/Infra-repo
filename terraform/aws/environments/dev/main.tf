@@ -262,13 +262,15 @@ resource "null_resource" "load_balancer_cleanup" {
   }
 
   depends_on = [
+    module.vpc,
     helm_release.ingress_nginx,
     helm_release.aws_load_balancer_controller
   ]
 
   provisioner "local-exec" {
-    when       = destroy
-    on_failure = fail
+    when        = destroy
+    on_failure  = fail
+    interpreter = ["/bin/bash", "-c"]
 
     command = <<-EOT
       set -e
@@ -335,6 +337,24 @@ resource "null_resource" "load_balancer_cleanup" {
         echo "No AWS NLB found. Nothing to wait for."
       fi
 
+      echo "=== Waiting for Kubernetes Service deletion ==="
+
+      if kubectl \
+        --kubeconfig "$KCFG" \
+        -n ingress-nginx \
+        get service ingress-nginx-controller \
+        >/dev/null 2>&1; then
+
+        kubectl \
+          --kubeconfig "$KCFG" \
+          -n ingress-nginx \
+          wait \
+          --for=delete \
+          service/ingress-nginx-controller \
+          --timeout=300s
+      fi
+
+      echo "Kubernetes LoadBalancer Service deleted."
       echo "=== LoadBalancer cleanup complete ==="
     EOT
   }
