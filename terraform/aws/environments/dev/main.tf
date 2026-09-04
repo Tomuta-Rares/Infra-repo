@@ -79,8 +79,13 @@ resource "helm_release" "argocd" {
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
+  version          = "10.7.1"
   namespace        = "argocd"
   create_namespace = true
+
+  wait    = true
+  timeout = 900
+  atomic  = true
 
   depends_on = [
     helm_release.aws_load_balancer_controller
@@ -91,7 +96,12 @@ resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
+  version    = "3.5.0"
   namespace  = "kube-system"
+
+  wait    = true
+  timeout = 900
+  atomic  = true
 
   set = [
     {
@@ -129,8 +139,13 @@ resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
+  version          = "4.15.1"
   namespace        = "ingress-nginx"
   create_namespace = true
+
+  wait    = true
+  timeout = 900
+  atomic  = true
 
   set = [
     {
@@ -154,8 +169,18 @@ resource "null_resource" "sealed_secrets_master_key" {
   ]
 
   provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --name ${module.eks.cluster_name} --region ${var.aws_region} && kubectl apply -f ${path.module}/sealed-secrets-master-key.yaml"
+    command = <<-EOT
+      KCFG=$(mktemp)
+      aws eks update-kubeconfig \
+        --name ${module.eks.cluster_name} \
+        --region ${var.aws_region} \
+        --kubeconfig "$KCFG"
 
+      kubectl --kubeconfig "$KCFG" apply \
+        -f ${path.module}/sealed-secrets-master-key.yaml
+
+      rm -f "$KCFG"
+    EOT
   }
 }
 
@@ -168,7 +193,18 @@ resource "null_resource" "argocd_root_app" {
   ]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/../../../../argocd/root/aws-root-app.yaml"
+    command = <<-EOT
+      KCFG=$(mktemp)
+      aws eks update-kubeconfig \
+        --name ${module.eks.cluster_name} \
+        --region ${var.aws_region} \
+        --kubeconfig "$KCFG"
+
+      kubectl --kubeconfig "$KCFG" apply \
+        -f ${path.module}/../../../../argocd/root/aws-root-app.yaml
+
+      rm -f "$KCFG"
+    EOT
   }
 }
 
@@ -177,8 +213,13 @@ resource "helm_release" "cert_manager" {
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
+  version          = "v1.21.1"
   namespace        = "cert-manager"
   create_namespace = true
+
+  wait    = true
+  timeout = 900
+  atomic  = true
 
   set = [
     {
@@ -188,7 +229,7 @@ resource "helm_release" "cert_manager" {
   ]
 
   depends_on = [
-    module.eks
+    helm_release.aws_load_balancer_controller
   ]
 }
 
@@ -198,6 +239,103 @@ resource "null_resource" "local_dev_root_ca" {
   ]
 
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/local-dev-root-ca-secret.yaml"
+    command = <<-EOT
+      KCFG=$(mktemp)
+      aws eks update-kubeconfig \
+        --name ${module.eks.cluster_name} \
+        --region ${var.aws_region} \
+        --kubeconfig "$KCFG"
+
+      kubectl --kubeconfig "$KCFG" apply \
+        -f ${path.module}/local-dev-root-ca-secret.yaml
+
+      rm -f "$KCFG"
+    EOT
+  }
+}
+
+
+resource "null_resource" "load_balancer_cleanup" {
+  triggers = {
+    cluster_name = module.eks.cluster_name
+    aws_region   = var.aws_region
+  }
+
+  depends_on = [
+    helm_release.ingress_nginx,
+    helm_release.aws_load_balancer_controller
+  ]
+
+  provisioner "local-exec" {
+    when       = destroy
+    on_failure = fail
+
+    command = <<-EOT
+      set -e
+
+      echo "=== Preparing Kubernetes access ==="
+
+      KCFG=$(mktemp)
+
+      cleanup() {
+        rm -f "$KCFG"
+      }
+
+      trap cleanup EXIT
+
+      aws eks update-kubeconfig \
+        --name "${self.triggers.cluster_name}" \
+        --region "${self.triggers.aws_region}" \
+        --kubeconfig "$KCFG"
+
+      echo "=== Detecting ingress-nginx LoadBalancer ==="
+
+      LB_HOST=$(kubectl \
+        --kubeconfig "$KCFG" \
+        -n ingress-nginx \
+        get service ingress-nginx-controller \
+        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' \
+        2>/dev/null || true)
+
+      echo "Load balancer hostname: $LB_HOST"
+
+      LB_ARN=""
+
+      if [ -n "$LB_HOST" ]; then
+        LB_ARN=$(aws elbv2 describe-load-balancers \
+          --region "${self.triggers.aws_region}" \
+          --query "LoadBalancers[?DNSName=='$LB_HOST'].LoadBalancerArn | [0]" \
+          --output text)
+
+        if [ "$LB_ARN" = "None" ]; then
+          LB_ARN=""
+        fi
+      fi
+
+      echo "Load balancer ARN: $LB_ARN"
+
+      echo "=== Deleting ingress-nginx LoadBalancer Service ==="
+
+      kubectl \
+        --kubeconfig "$KCFG" \
+        -n ingress-nginx \
+        delete service ingress-nginx-controller \
+        --ignore-not-found=true \
+        --wait=false
+
+      if [ -n "$LB_ARN" ]; then
+        echo "=== Waiting for AWS NLB deletion ==="
+
+        aws elbv2 wait load-balancers-deleted \
+          --region "${self.triggers.aws_region}" \
+          --load-balancer-arns "$LB_ARN"
+
+        echo "AWS NLB deleted."
+      else
+        echo "No AWS NLB found. Nothing to wait for."
+      fi
+
+      echo "=== LoadBalancer cleanup complete ==="
+    EOT
   }
 }
