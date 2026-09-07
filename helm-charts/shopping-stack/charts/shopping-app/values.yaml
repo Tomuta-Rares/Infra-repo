@@ -2,7 +2,7 @@ namespace: shopping
 replicaCount: 2
 image:
   repository: rarestomuta/shopping-backend
-  tag: "canary-v3-broken"
+  tag: "canary-v2"
   pullPolicy: IfNotPresent
 frontend:
   image:
