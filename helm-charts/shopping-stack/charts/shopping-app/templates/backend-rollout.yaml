@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Values.namespace}}
@@ -8,6 +8,17 @@ spec:
   selector:
     matchLabels:
       app: shopping
+  
+  strategy:
+    canary:
+      maxSurge: 1
+      maxUnavailable: 0
+
+      steps:
+        - setWeight: 50
+        - pause: {}
+        - setWeight: 100
+        
   template:
     metadata:
       labels:
