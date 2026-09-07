@@ -2,13 +2,13 @@ namespace: shopping
 replicaCount: 2
 image:
   repository: rarestomuta/shopping-backend
-  tag: "canary-v2"
+  tag: "93c42c6f81647f2ace401f584909426c2c354a00"
   pullPolicy: IfNotPresent
 frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    tag: "b51b5d88731c53d84f7bf7a028af86d8373a7067"
+    tag: "93c42c6f81647f2ace401f584909426c2c354a00"
 resources:
   requests:
     cpu: 100m
