@@ -8,7 +8,7 @@ frontend:
   image:
     repository: rarestomuta/shopping-frontend
     pullPolicy: IfNotPresent
-    tag: "b51b5d88731c53d84f7bf7a028af86d8373a7067"
+    tag: "canary-v2"
 resources:
   requests:
     cpu: 100m
