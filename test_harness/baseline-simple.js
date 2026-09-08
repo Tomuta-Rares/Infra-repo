@@ -5,12 +5,18 @@ export const options = {
   vus: 1,
   duration: '5m',
   insecureSkipTLSVerify: true,
+
+  thresholds: {
+    checks: ['rate>0.99'],
+    http_req_failed: ['rate<0.01'],
+    http_req_duration: ['p(95)<500'],
+  },
 };
 
-const BASE_URL = __ENV.BASE_URL || 'https://shopping.local:8443';
+const BASE_URL = __ENV.BASE_URL || 'https://shopping.local';
 const TOKEN_URL =
   __ENV.TOKEN_URL ||
-  'https://auth.local:8443/auth/realms/devops-lvlup/protocol/openid-connect/token';
+  'https://auth.local/auth/realms/devops-lvlup/protocol/openid-connect/token';
 
 const USERNAME = __ENV.USERNAME;
 const PASSWORD = __ENV.PASSWORD;

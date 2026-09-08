@@ -1,0 +1,151 @@
+{
+    "metrics": {
+        "http_req_sending": {
+            "min": 0.069833,
+            "med": 0.1027645,
+            "max": 0.490367,
+            "p(90)": 0.14561970000000005,
+            "p(95)": 0.17214895,
+            "avg": 0.11188855862068965
+        },
+        "iteration_duration": {
+            "p(90)": 1056.5104715999998,
+            "p(95)": 1061.2556738,
+            "avg": 1049.1413107979092,
+            "min": 1039.129176,
+            "med": 1043.232431,
+            "max": 1391.748429
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(90)": 55.5860364,
+            "p(95)": 61.01936359999997,
+            "avg": 47.142205979238774,
+            "min": 38.451127,
+            "med": 42.453311,
+            "max": 161.24763
+        },
+        "iterations": {
+            "count": 287,
+            "rate": 0.9531225964709796
+        },
+        "data_sent": {
+            "count": 42522,
+            "rate": 141.2149095719129
+        },
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 26.719519,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.2640128931034483
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.3285109413793103,
+            "min": 0,
+            "med": 0,
+            "max": 36.114443
+        },
+        "http_req_duration": {
+            "min": 35.451654,
+            "med": 42.41781,
+            "max": 161.24763,
+            "p(90)": 55.5696172,
+            "p(95)": 60.968754300000015,
+            "avg": 47.1018937310345
+        },
+        "http_req_waiting": {
+            "min": 35.248625,
+            "med": 42.193591,
+            "max": 160.920935,
+            "p(90)": 55.389002,
+            "p(95)": 60.72266220000001,
+            "avg": 46.74927666896551
+        },
+        "http_req_receiving": {
+            "avg": 0.24072850344827587,
+            "min": 0.052386,
+            "med": 0.10416049999999999,
+            "max": 6.933684,
+            "p(90)": 0.48529380000000133,
+            "p(95)": 0.7402290000000005
+        },
+        "http_req_failed": {
+            "fails": 289,
+            "passes": 1,
+            "value": 0.0034482758620689655
+        },
+        "checks": {
+            "passes": 291,
+            "fails": 0,
+            "value": 1
+        },
+        "vus_max": {
+            "max": 1,
+            "value": 1,
+            "min": 1
+        },
+        "http_reqs": {
+            "count": 290,
+            "rate": 0.9630855504410596
+        },
+        "http_req_blocked": {
+            "avg": 0.6439983655172412,
+            "min": 0.000158,
+            "med": 0.000183,
+            "max": 63.048124,
+            "p(90)": 0.00022010000000000004,
+            "p(95)": 0.00044430000000000007
+        },
+        "data_received": {
+            "count": 505276,
+            "rate": 1678.0138433953684
+        }
+    },
+    "setup_data": {
+        "runId": "aws-baseline-001"
+    },
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "token endpoint returned 200": {
+                    "name": "token endpoint returned 200",
+                    "path": "::token endpoint returned 200",
+                    "id": "ce848b3ca4befc78ab15b32eb61172bd",
+                    "passes": 2,
+                    "fails": 0
+                },
+                "token exists": {
+                    "name": "token exists",
+                    "path": "::token exists",
+                    "id": "501d3ab8642eebcf0d59abc7d9aca2c1",
+                    "passes": 2,
+                    "fails": 0
+                },
+                "POST /api/items returned 201": {
+                    "name": "POST /api/items returned 201",
+                    "path": "::POST /api/items returned 201",
+                    "id": "92eebb5f3bcc801692683222e3c3e35d",
+                    "passes": 64,
+                    "fails": 0
+                },
+                "GET /api/items returned 200": {
+                    "name": "GET /api/items returned 200",
+                    "path": "::GET /api/items returned 200",
+                    "id": "a6b5a343290e93ea54d9287fd1362d43",
+                    "passes": 223,
+                    "fails": 0
+                }
+            },
+        "name": "",
+        "path": ""
+    }
+}
