@@ -21,16 +21,17 @@ const TOKEN_URL =
 const USERNAME = __ENV.USERNAME;
 const PASSWORD = __ENV.PASSWORD;
 const RUN_ID = __ENV.RUN_ID || `run-${Date.now()}`;
+const CLIENT_ID = __ENV.CLIENT_ID || 'shopping-frontend';
 
 let vuToken = null;
 
 function getAccessToken() {
   const payload = {
-    client_id: 'k6-cli',
+    client_id: CLIENT_ID,
     username: USERNAME,
     password: PASSWORD,
     grant_type: 'password',
-  };
+};
 
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
