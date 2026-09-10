@@ -351,13 +351,13 @@ ingress:
   labels: {}
   rules:
     -
-      host: auth.local
+      host: auth.benchpressproiectradu.ro
       paths:
         - path: /auth/
           pathType: Prefix
   tls:
   - hosts:
-      - auth.local
+      - auth.benchpressproiectradu.ro
     secretName: keycloak-tls-secret
 
   # ingress for console only (/auth/admin)

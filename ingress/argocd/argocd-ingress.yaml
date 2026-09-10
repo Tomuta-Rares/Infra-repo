@@ -9,10 +9,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - argocd.local
+        - argocd.benchpressproiectradu.ro
       secretName: argocd-tls-secret
   rules:
-    - host: argocd.local
+    - host: argocd.benchpressproiectradu.ro
       http:
         paths:
           - path: /

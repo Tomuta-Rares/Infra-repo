@@ -7,10 +7,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - grafana.local
+        - grafana.benchpressproiectradu.ro
       secretName: grafana-tls-secret
   rules:
-    - host: grafana.local
+    - host: grafana.benchpressproiectradu.ro
       http:
         paths:
           - path: /
