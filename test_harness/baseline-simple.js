@@ -13,10 +13,10 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.BASE_URL || 'https://shopping.local';
+const BASE_URL = __ENV.BASE_URL || 'https://shopping.benchpressproiectradu.ro';
 const TOKEN_URL =
   __ENV.TOKEN_URL ||
-  'https://auth.local/auth/realms/devops-lvlup/protocol/openid-connect/token';
+  'https://auth.benchpressproiectradu.ro/auth/realms/devops-lvlup/protocol/openid-connect/token';
 
 const USERNAME = __ENV.USERNAME;
 const PASSWORD = __ENV.PASSWORD;
