@@ -4,7 +4,6 @@ import { check, sleep } from 'k6';
 export const options = {
   vus: 1,
   duration: '5m',
-  insecureSkipTLSVerify: true,
 
   thresholds: {
     checks: ['rate>0.99'],
