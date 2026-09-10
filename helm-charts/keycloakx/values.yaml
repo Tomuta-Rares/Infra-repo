@@ -120,7 +120,7 @@ extraEnv: |
         name: keycloak-admin-secret
         key: password
   - name: KC_HOSTNAME
-    value: https://auth.local/auth
+    value: https://auth.benchpressproiectradu.ro/auth
 
 # Additional environment variables for Keycloak mapped from Secret or ConfigMap
 extraEnvFrom: ""

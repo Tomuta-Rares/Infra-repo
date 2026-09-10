@@ -14,15 +14,15 @@
       "enabled": true,
       "publicClient": true,
       "redirectUris": [
-        "https://shopping.local/*"
+        "https://shopping.benchpressproiectradu.ro/*"
       ],
       "webOrigins": [
-        "https://shopping.local"
+        "https://shopping.benchpressproiectradu.ro"
       ],
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "attributes": {
-        "post.logout.redirect.uris": "https://shopping.local/*"
+        "post.logout.redirect.uris": "https://shopping.benchpressproiectradu.ro/*"
       }
     }
   ],
