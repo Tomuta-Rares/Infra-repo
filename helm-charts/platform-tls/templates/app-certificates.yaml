@@ -6,9 +6,9 @@ metadata:
 spec:
   secretName: shopping-tls-secret
   dnsNames:
-    - shopping.local
+    - shopping.benchpressproiectradu.ro
   issuerRef:
-    name: local-ca
+    name: letsencrypt-staging
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -19,9 +19,9 @@ metadata:
 spec:
   secretName: keycloak-tls-secret
   dnsNames:
-    - auth.local
+    - auth.benchpressproiectradu.ro
   issuerRef:
-    name: local-ca
+    name: letsencrypt-staging
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -32,9 +32,9 @@ metadata:
 spec:
   secretName: grafana-tls-secret
   dnsNames:
-    - grafana.local
+    - grafana.benchpressproiectradu.ro
   issuerRef:
-    name: local-ca
+    name: letsencrypt-staging
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -45,7 +45,7 @@ metadata:
 spec:
   secretName: argocd-tls-secret
   dnsNames:
-    - argocd.local
+    - argocd.benchpressproiectradu.ro
   issuerRef:
-    name: local-ca
+    name: letsencrypt-staging
     kind: ClusterIssuer
