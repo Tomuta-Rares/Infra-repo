@@ -8,7 +8,7 @@ spec:
   dnsNames:
     - shopping.benchpressproiectradu.ro
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -21,7 +21,7 @@ spec:
   dnsNames:
     - auth.benchpressproiectradu.ro
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -34,7 +34,7 @@ spec:
   dnsNames:
     - grafana.benchpressproiectradu.ro
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
 ---
 apiVersion: cert-manager.io/v1
@@ -47,5 +47,5 @@ spec:
   dnsNames:
     - argocd.benchpressproiectradu.ro
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-prod
     kind: ClusterIssuer
