@@ -49,6 +49,10 @@ module "eks" {
   subnet_ids          = module.vpc.public_subnet_ids
   node_subnet_ids     = module.vpc.public_subnet_ids
   node_instance_types = ["t3.small"]
+
+  depends_on = [
+    module.vpc
+  ]
 }
 
 data "aws_eks_cluster" "this" {
