@@ -186,5 +186,5 @@ prometheus:
 
         - name: "webhook"
           webhook_configs:
-            - url: "https://webhook.site/fa8a242d-c6cb-4b4f-852d-b0a10606598d"
+            - url: "https://webhook.site/a7237f00-8bf4-4b0b-8f9c-5faddc06a785"
               send_resolved: true
